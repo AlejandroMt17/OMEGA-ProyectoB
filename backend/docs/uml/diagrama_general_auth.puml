@@ -1,0 +1,81 @@
+@startuml Diagrama_General_Auth_OMEGA
+
+skinparam backgroundColor #F8F9FA
+skinparam linetype ortho
+top to bottom direction
+
+skinparam state {
+  BackgroundColor #DDEEFF
+  BorderColor #336699
+  FontName Arial
+  FontSize 12
+  ArrowColor #336699
+  ArrowFontSize 10
+}
+
+title Diagrama de Estados General (Autenticación)\nSistema OMEGA Control de Asistencias
+
+[*] --> Splash
+
+state "1. SPLASH / CARGA" as Splash {
+  Splash : Pantalla de bienvenida
+  Splash : Carga inicial de la app
+}
+
+Splash --> Login : Carga completada
+
+state "2. LOGIN" as Login #DDEEFF {
+  Login : Usuario ingresa email
+  Login : y contraseña
+  Login : (Docente o Alumno)
+}
+
+Login --> Registro : Clic en Crear cuenta
+Login --> ValidandoDatos : Ingresar datos\ny presionar Iniciar sesión
+
+state "3. REGISTRO" as Registro #FFE0B2 {
+  Registro : Usuario completa formulario
+  Registro : nombre, apellidos, email
+  Registro : contraseña
+}
+
+Registro --> ValidandoDatos : Completa formulario\ny presiona Registrarse
+
+state "4. VALIDANDO DATOS" as ValidandoDatos #E1BEE7 {
+  ValidandoDatos : El sistema valida la
+  ValidandoDatos : información ingresada
+  ValidandoDatos : POST /api/auth/login
+  ValidandoDatos : POST /api/auth/registro
+}
+
+ValidandoDatos --> Error : Datos incorrectos
+ValidandoDatos --> DashboardDocente : Datos correctos\nrol = Docente
+ValidandoDatos --> DashboardAlumno : Datos correctos\nrol = Alumno
+
+state "5. ERROR" as Error #FFCDD2 {
+  Error : Se muestra mensaje
+  Error : de error al usuario
+}
+
+Error --> Login : Volver a iniciar sesión
+Error --> Registro : Volver a intentar
+
+state "6. DASHBOARD DOCENTE" as DashboardDocente #C8E6C9 {
+  DashboardDocente : Bienvenido [Docente]
+  DashboardDocente : Aulas activas
+  DashboardDocente : Sesiones hoy
+  DashboardDocente : Justificantes pendientes
+}
+
+state "7. DASHBOARD ALUMNO" as DashboardAlumno #B3E5FC {
+  DashboardAlumno : Bienvenido [Alumno]
+  DashboardAlumno : Mis grupos inscritos
+  DashboardAlumno : Materias asignadas
+}
+
+DashboardDocente --> Login : Cerrar sesión
+DashboardAlumno --> Login : Cerrar sesión
+DashboardDocente --> [*] : Continúa en\ndiagrama de flujo general
+DashboardAlumno --> [*] : Continúa en\ndiagrama de flujo general
+
+@enduml

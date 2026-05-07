@@ -1,0 +1,215 @@
+@startuml Diagrama_General_Flujo_OMEGA
+
+skinparam backgroundColor #F8F9FA
+skinparam linetype ortho
+top to bottom direction
+
+skinparam state {
+  BackgroundColor #DDEEFF
+  BorderColor #336699
+  FontName Arial
+  FontSize 12
+  ArrowColor #336699
+  ArrowFontSize 10
+}
+
+title Diagrama de Estados General (Flujo Principal)\nSistema OMEGA Control de Asistencias
+
+[*] --> DashboardDocente : Docente autenticado
+[*] --> DashboardAlumno : Alumno autenticado
+
+state "6. DASHBOARD DOCENTE" as DashboardDocente #C8E6C9 {
+  DashboardDocente : Bienvenido [Docente]
+  DashboardDocente : Aulas activas
+  DashboardDocente : Sesiones hoy
+  DashboardDocente : Justificantes pendientes
+}
+
+state "7. DASHBOARD ALUMNO" as DashboardAlumno #B3E5FC {
+  DashboardAlumno : Bienvenido [Alumno]
+  DashboardAlumno : Mis grupos inscritos
+  DashboardAlumno : Materias asignadas
+}
+
+' ==================== MÓDULOS DOCENTE ====================
+DashboardDocente --> Instituciones : Clic en\nMis Instituciones
+DashboardDocente --> MisAulas : Clic en\nMis Aulas
+DashboardDocente --> Justificantes : Clic en\nJustificantes
+DashboardDocente --> Reportes : Clic en\nReportes
+DashboardDocente --> Suscripcion : Clic en\nSuscripción
+DashboardDocente --> PerfilDocente : Clic en\nMi Perfil
+
+state "8. MIS INSTITUCIONES" as Instituciones #DDEEFF {
+  Instituciones : Lista de instituciones
+  Instituciones : Crear / Editar / Eliminar
+}
+
+Instituciones --> DashboardDocente : Volver
+
+state "9. MIS AULAS" as MisAulas #DDEEFF {
+  MisAulas : Lista de grupos
+  MisAulas : Crear / Editar / Eliminar
+  MisAulas : Generar código invitación
+}
+
+MisAulas --> Sesiones : Clic en Sesiones
+MisAulas --> DashboardDocente : Volver
+
+state "10. SESIONES" as Sesiones #DDEEFF {
+  Sesiones : Lista de sesiones del grupo
+  Sesiones : Abrir / Cerrar sesión
+}
+
+Sesiones --> SesionAbierta : Abrir sesión
+
+state "10.1 SESIÓN ABIERTA" as SesionAbierta #C8E6C9 {
+  SesionAbierta : Clave activa visible
+  SesionAbierta : Alumnos registrando asistencia
+}
+
+SesionAbierta --> SesionCerrada : Cerrar sesión
+SesionAbierta --> DetalleAsistencias : Ver detalles
+
+state "10.2 SESIÓN CERRADA" as SesionCerrada #ECEFF1 {
+  SesionCerrada : hora_cierre registrada
+  SesionCerrada : Sin acción posible
+}
+
+state "10.3 DETALLE ASISTENCIAS" as DetalleAsistencias #E8F5E9 {
+  DetalleAsistencias : Presente / Ausente / Justificada
+  DetalleAsistencias : Hora de registro por alumno
+}
+
+SesionCerrada --> Sesiones : Volver
+DetalleAsistencias --> Sesiones : Volver
+Sesiones --> MisAulas : Volver
+
+state "11. JUSTIFICANTES" as Justificantes #DDEEFF {
+  Justificantes : Lista de ausencias
+  Justificantes : Justificar / Marcar ausente
+}
+
+Justificantes --> DashboardDocente : Volver
+
+state "12. REPORTES" as Reportes #DDEEFF {
+  Reportes : Resumen por grupo
+  Reportes : % asistencia general
+}
+
+Reportes --> DetalleReporte : Ver detalles
+
+state "12.1 DETALLE REPORTE" as DetalleReporte #E3F2FD {
+  DetalleReporte : Reporte por sesión
+  DetalleReporte : Presentes / Ausentes / Justificadas
+}
+
+DetalleReporte --> DetalleAsistencias : Ver asistencias
+DetalleReporte --> Reportes : Volver
+Reportes --> DashboardDocente : Volver
+
+state "13. SUSCRIPCIÓN" as Suscripcion #FFF9C4 {
+  Suscripcion : Plan Básico o Mensual
+  Suscripcion : Fecha inicio / Fecha fin
+}
+
+Suscripcion --> PagoPayPal : Pagar con PayPal
+
+state "13.1 PAGO PAYPAL" as PagoPayPal #FFE0B2 {
+  PagoPayPal : Redirigido a PayPal
+  PagoPayPal : Usuario aprueba el pago
+}
+
+PagoPayPal --> PlanActivo : Pago OK
+PagoPayPal --> ErrorPago : Pago fallido
+
+state "13.2 PLAN MENSUAL ACTIVO" as PlanActivo #C8E6C9 {
+  PlanActivo : est_suscripcion = Activa
+  PlanActivo : fec_fin = hoy + 30 días
+}
+
+state "13.3 ERROR DE PAGO" as ErrorPago #FFCDD2 {
+  ErrorPago : Pago no completado
+  ErrorPago : o cancelado
+}
+
+PlanActivo --> Suscripcion : Volver
+ErrorPago --> Suscripcion : Volver a intentar
+Suscripcion --> DashboardDocente : Volver
+
+state "14. PERFIL DOCENTE" as PerfilDocente #DDEEFF {
+  PerfilDocente : Datos personales
+  PerfilDocente : Cambiar contraseña
+}
+
+PerfilDocente --> DashboardDocente : Volver
+
+' ==================== MÓDULOS ALUMNO ====================
+DashboardAlumno --> UnirseGrupo : Clic en\nUnirse a grupo
+DashboardAlumno --> RegistrarAsistencia : Clic en\nRegistrar asistencia
+DashboardAlumno --> HistorialAsistencias : Clic en\nVer historial
+DashboardAlumno --> PerfilAlumno : Clic en\nMi Perfil
+
+state "15. UNIRSE A GRUPO" as UnirseGrupo #B3E5FC {
+  UnirseGrupo : Ingresar código invitación
+  UnirseGrupo : POST /api/grupos/matricular
+}
+
+UnirseGrupo --> GrupoVinculado : Código válido
+UnirseGrupo --> ErrorCodigo : Código inválido
+
+state "15.1 GRUPO VINCULADO" as GrupoVinculado #C8E6C9 {
+  GrupoVinculado : Alumno agregado al grupo
+  GrupoVinculado : Visible en Dashboard
+}
+
+state "15.2 ERROR CÓDIGO" as ErrorCodigo #FFCDD2 {
+  ErrorCodigo : Código inválido
+  ErrorCodigo : o expirado
+}
+
+GrupoVinculado --> DashboardAlumno : Volver
+ErrorCodigo --> UnirseGrupo : Volver a intentar
+
+state "16. REGISTRAR ASISTENCIA" as RegistrarAsistencia #B3E5FC {
+  RegistrarAsistencia : Ingresar clave del docente
+  RegistrarAsistencia : POST /api/asistencias/registrar
+}
+
+RegistrarAsistencia --> AsistenciaRegistrada : Clave válida
+RegistrarAsistencia --> ErrorClave : Clave incorrecta
+RegistrarAsistencia --> SesionCerradaAlumno : Sesión cerrada
+
+state "16.1 ASISTENCIA REGISTRADA" as AsistenciaRegistrada #C8E6C9 {
+  AsistenciaRegistrada : est_asistencia = Presente
+  AsistenciaRegistrada : hora_registro guardada
+}
+
+state "16.2 ERROR CLAVE" as ErrorClave #FFCDD2 {
+  ErrorClave : Clave incorrecta
+  ErrorClave : o inválida
+}
+
+state "16.3 SESIÓN CERRADA" as SesionCerradaAlumno #ECEFF1 {
+  SesionCerradaAlumno : No es posible registrar
+  SesionCerradaAlumno : La sesión fue cerrada
+}
+
+AsistenciaRegistrada --> DashboardAlumno : Volver
+ErrorClave --> RegistrarAsistencia : Volver a intentar
+SesionCerradaAlumno --> DashboardAlumno : Volver
+
+state "17. HISTORIAL ASISTENCIAS" as HistorialAsistencias #B3E5FC {
+  HistorialAsistencias : Por grupo y sesión
+  HistorialAsistencias : Presente / Ausente / Justificada
+}
+
+HistorialAsistencias --> DashboardAlumno : Volver
+
+state "18. PERFIL ALUMNO" as PerfilAlumno #B3E5FC {
+  PerfilAlumno : Datos personales
+  PerfilAlumno : Cambiar contraseña
+}
+
+PerfilAlumno --> DashboardAlumno : Volver
+
+@enduml

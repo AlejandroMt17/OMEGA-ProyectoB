@@ -1,0 +1,141 @@
+@startuml Diagrama_Docente_Extras_OMEGA
+
+skinparam backgroundColor #F8F9FA
+skinparam linetype ortho
+top to bottom direction
+
+skinparam state {
+  BackgroundColor #DDEEFF
+  BorderColor #336699
+  FontName Arial
+  FontSize 12
+  ArrowColor #336699
+  ArrowFontSize 10
+}
+
+title Diagrama de Estados — Usuario Docente (Justificantes, Reportes, Suscripción y Perfil)\nSistema OMEGA Control de Asistencias
+
+[*] --> Dashboard : Viene del\ndiagrama de auth
+
+state "6. DASHBOARD" as Dashboard #C8E6C9 {
+  Dashboard : Bienvenido [Docente]
+  Dashboard : Aulas activas
+  Dashboard : Sesiones hoy
+  Dashboard : Justificantes pendientes
+}
+
+Dashboard --> Justificantes : Clic en Justificantes
+Dashboard --> Reportes : Clic en Reportes
+Dashboard --> Suscripcion : Clic en Suscripción
+Dashboard --> Perfil : Clic en Mi Perfil
+
+' ==================== JUSTIFICANTES ====================
+state "10. JUSTIFICANTES" as Justificantes #DDEEFF {
+  Justificantes : Lista de ausencias
+  Justificantes : de todos los grupos
+  Justificantes : Alumno / Grupo / Sesión / Estado
+}
+
+Justificantes --> JustificarAlumno : Clic en Justificar
+Justificantes --> MarcarAusente : Clic en Marcar ausente
+Justificantes --> Dashboard : Volver
+
+state "10.1 AUSENCIA JUSTIFICADA" as JustificarAlumno #C8E6C9 {
+  JustificarAlumno : est_asistencia = Justificada
+  JustificarAlumno : Cambio guardado
+}
+
+state "10.2 MARCAR AUSENTE" as MarcarAusente #FFCDD2 {
+  MarcarAusente : est_asistencia = Ausente
+  MarcarAusente : Confirmación requerida
+}
+
+JustificarAlumno --> Justificantes : Volver
+MarcarAusente --> Justificantes : Volver
+
+' ==================== REPORTES ====================
+state "11. REPORTES" as Reportes #DDEEFF {
+  Reportes : Resumen por grupo
+  Reportes : % asistencia general
+  Reportes : Presentes / Ausentes / Justificadas
+}
+
+Reportes --> DetalleReporte : Clic en Detalles
+Reportes --> Dashboard : Volver
+
+state "11.1 DETALLE REPORTE" as DetalleReporte #E3F2FD {
+  DetalleReporte : Reporte por sesión
+  DetalleReporte : Presentes / Ausentes
+  DetalleReporte : Justificadas por sesión
+}
+
+DetalleReporte --> DetalleAsistencias : Clic en Detalles sesión
+DetalleReporte --> Reportes : Volver
+
+state "11.2 DETALLE ASISTENCIAS" as DetalleAsistencias #E8F5E9 {
+  DetalleAsistencias : Lista de alumnos
+  DetalleAsistencias : Presente / Ausente / Justificada
+  DetalleAsistencias : Hora de registro
+}
+
+DetalleAsistencias --> DetalleReporte : Volver
+
+' ==================== SUSCRIPCIÓN ====================
+state "12. SUSCRIPCIÓN" as Suscripcion #FFF9C4 {
+  Suscripcion : Plan actual
+  Suscripcion : Básico (gratis) o Mensual ($149)
+  Suscripcion : Fecha inicio / Fecha fin
+}
+
+Suscripcion --> PagandoPayPal : Clic en Pagar con PayPal
+Suscripcion --> Dashboard : Volver
+
+state "12.1 PROCESANDO PAGO PAYPAL" as PagandoPayPal #FFE0B2 {
+  PagandoPayPal : Redirigido a PayPal
+  PagandoPayPal : Usuario aprueba el pago
+  PagandoPayPal : Sistema captura la orden
+}
+
+PagandoPayPal --> PlanMensualActivo : Pago capturado OK
+PagandoPayPal --> ErrorPago : Pago fallido
+
+state "12.2 PLAN MENSUAL ACTIVO" as PlanMensualActivo #C8E6C9 {
+  PlanMensualActivo : est_suscripcion = Activa
+  PlanMensualActivo : fec_fin = hoy + 30 días
+  PlanMensualActivo : Pago registrado en historial
+}
+
+state "12.3 ERROR DE PAGO" as ErrorPago #FFCDD2 {
+  ErrorPago : Pago no completado
+  ErrorPago : o cancelado por usuario
+}
+
+PlanMensualActivo --> Suscripcion : Volver
+ErrorPago --> Suscripcion : Volver a intentar
+
+' ==================== PERFIL ====================
+state "13. MI PERFIL" as Perfil #DDEEFF {
+  Perfil : Datos personales
+  Perfil : nombre, apellidos, email
+  Perfil : Rol: Docente (no editable)
+}
+
+Perfil --> PerfilActualizado : Clic en Actualizar
+Perfil --> CambiarContrasenia : Clic en Cambiar contraseña
+Perfil --> Dashboard : Volver
+
+state "13.1 PERFIL ACTUALIZADO" as PerfilActualizado #C8E6C9 {
+  PerfilActualizado : Datos guardados
+  PerfilActualizado : correctamente
+}
+
+state "13.2 CAMBIAR CONTRASEÑA" as CambiarContrasenia #E3F2FD {
+  CambiarContrasenia : Contraseña actual
+  CambiarContrasenia : Nueva contraseña
+  CambiarContrasenia : Confirmar contraseña
+}
+
+PerfilActualizado --> Perfil : Volver
+CambiarContrasenia --> Perfil : Guardar
+
+@enduml

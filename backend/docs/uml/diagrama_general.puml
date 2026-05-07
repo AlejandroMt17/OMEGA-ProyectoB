@@ -1,0 +1,226 @@
+@startuml Diagrama_General_OMEGA
+
+skinparam backgroundColor #F8F9FA
+skinparam state {
+  BackgroundColor #DDEEFF
+  BorderColor #336699
+  FontName Arial
+  FontSize 13
+  ArrowColor #336699
+  ArrowFontSize 11
+}
+
+title Diagrama de Estados — Sistema OMEGA Control de Asistencias
+
+[*] --> Splash
+
+state "1. SPLASH / CARGA" as Splash {
+  Splash : Pantalla de bienvenida
+  Splash : Carga inicial de la app
+}
+
+Splash --> Login : Carga completada
+
+state "2. LOGIN" as Login {
+  Login : Usuario ingresa email
+  Login : y contraseña
+}
+
+Login --> Registro : Clic en Crear cuenta
+Login --> ValidandoDatos : Ingresar datos\ny presionar Iniciar sesión
+
+state "3. REGISTRO" as Registro #FFE0B2 {
+  Registro : Usuario completa formulario
+  Registro : nombre, apellidos, email
+  Registro : contraseña
+}
+
+Registro --> ValidandoDatos : Completa formulario\ny presiona Registrarse
+
+state "4. VALIDANDO DATOS" as ValidandoDatos #E1BEE7 {
+  ValidandoDatos : El sistema valida la
+  ValidandoDatos : información ingresada
+}
+
+ValidandoDatos --> Error : Datos incorrectos
+ValidandoDatos --> Dashboard : Datos correctos
+
+state "5. ERROR" as Error #FFCDD2 {
+  Error : Se muestra mensaje
+  Error : de error al usuario
+}
+
+Error --> Login : Volver a iniciar sesión
+Error --> Registro : Volver a intentar (Registro)
+Error --> RegistroAsistencia : Volver a intentar\n(Registro de asistencia)
+
+state "6. DASHBOARD / PANTALLA PRINCIPAL" as Dashboard #C8E6C9 {
+  Dashboard : Bienvenido [Usuario]
+  Dashboard : Resumen de aulas y sesiones hoy
+  Dashboard : Aulas activas / Justificantes pendientes
+}
+
+Dashboard --> Instituciones : Clic en Mis Instituciones
+Dashboard --> MisAulas : Clic en Mis Aulas
+Dashboard --> Justificantes : Clic en Justificantes
+Dashboard --> Reportes : Clic en Reportes
+Dashboard --> Suscripcion : Clic en Suscripción
+Dashboard --> Perfil : Clic en Mi Perfil
+Dashboard --> Login : Cerrar sesión
+
+state "7. MIS INSTITUCIONES" as Instituciones {
+  Instituciones : Lista de instituciones del usuario
+}
+
+Instituciones --> CrearInstitucion : Clic en Nueva institución
+Instituciones --> EditarInstitucion : Clic en Editar
+Instituciones --> EliminarInstitucion : Clic en Eliminar
+
+state "7.1 CREAR / EDITAR INSTITUCIÓN" as CrearInstitucion #DDEEFF {
+  CrearInstitucion : Formulario de institución
+}
+state "7.2 EDITAR INSTITUCIÓN" as EditarInstitucion #DDEEFF {
+  EditarInstitucion : Editar datos de institución
+}
+state "7.3 CONFIRMAR ELIMINACIÓN" as EliminarInstitucion #FFCDD2 {
+  EliminarInstitucion : ¿Confirmar eliminación?
+}
+
+CrearInstitucion --> Instituciones : Guardar
+EditarInstitucion --> Instituciones : Guardar
+EliminarInstitucion --> Instituciones : Confirmar
+
+state "8. MIS AULAS (GRUPOS)" as MisAulas {
+  MisAulas : Lista de grupos del docente
+  MisAulas : Nombre / Materia / Periodo / Alumnos
+}
+
+MisAulas --> CrearAula : Clic en Nueva aula
+MisAulas --> EditarAula : Clic en Editar
+MisAulas --> EliminarAula : Clic en Eliminar
+MisAulas --> Sesiones : Clic en Sesiones
+MisAulas --> GenerarCodigo : Clic en Generar código
+
+state "8.1 CREAR / EDITAR AULA" as CrearAula #DDEEFF {
+  CrearAula : Formulario de grupo
+}
+state "8.2 EDITAR AULA" as EditarAula #DDEEFF {
+  EditarAula : Editar datos del grupo
+}
+state "8.3 CÓDIGO DE INVITACIÓN" as GenerarCodigo #FFF9C4 {
+  GenerarCodigo : Código generado y visible
+  GenerarCodigo : Alumnos pueden unirse
+}
+state "8.4 CONFIRMAR ELIMINACIÓN" as EliminarAula #FFCDD2 {
+  EliminarAula : ¿Confirmar eliminación?
+}
+
+CrearAula --> MisAulas : Guardar
+EditarAula --> MisAulas : Guardar
+EliminarAula --> MisAulas : Confirmar
+GenerarCodigo --> MisAulas : Volver
+
+state "9. SESIONES" as Sesiones {
+  Sesiones : Lista de sesiones del grupo
+  Sesiones : Fecha / Apertura / Cierre / Estado
+}
+
+Sesiones --> SesionAbierta : Clic en Abrir sesión
+Sesiones --> DetalleAsistencias : Clic en Detalles
+
+state "9.1 SESIÓN ABIERTA" as SesionAbierta #C8E6C9 {
+  SesionAbierta : Clave activa visible
+  SesionAbierta : Alumnos registrando asistencia
+  SesionAbierta : Banner verde pulsando
+}
+
+SesionAbierta --> SesionCerrada : Clic en Cerrar sesión
+SesionAbierta --> DetalleAsistencias : Clic en Detalles
+
+state "9.2 SESIÓN CERRADA" as SesionCerrada #ECEFF1 {
+  SesionCerrada : hora_cierre registrada
+  SesionCerrada : Sin acción posible
+}
+
+state "9.3 DETALLE ASISTENCIAS" as DetalleAsistencias {
+  DetalleAsistencias : Lista de alumnos
+  DetalleAsistencias : Presente / Ausente / Justificada
+  DetalleAsistencias : Hora de registro
+}
+
+SesionCerrada --> Sesiones : Volver
+
+state "10. JUSTIFICANTES" as Justificantes {
+  Justificantes : Lista de ausencias de todos los grupos
+}
+
+Justificantes --> JustificarAlumno : Clic en Justificar
+Justificantes --> MarcarAusente : Clic en Marcar ausente
+
+state "10.1 JUSTIFICADA" as JustificarAlumno #C8E6C9 {
+  JustificarAlumno : est_asistencia = Justificada
+}
+state "10.2 AUSENTE" as MarcarAusente #FFCDD2 {
+  MarcarAusente : est_asistencia = Ausente
+}
+
+JustificarAlumno --> Justificantes : Volver
+MarcarAusente --> Justificantes : Volver
+
+state "11. REPORTES" as Reportes {
+  Reportes : Resumen por grupo
+  Reportes : % asistencia / Presentes / Ausentes
+}
+
+Reportes --> DetalleReporte : Clic en Detalles
+
+state "11.1 DETALLE REPORTE" as DetalleReporte {
+  DetalleReporte : Reporte por sesión
+  DetalleReporte : Presentes / Ausentes / Justificadas
+}
+
+DetalleReporte --> DetalleAsistencias : Clic en Detalles sesión
+DetalleReporte --> Reportes : Volver
+
+state "12. SUSCRIPCIÓN" as Suscripcion {
+  Suscripcion : Plan actual (Básico o Mensual)
+  Suscripcion : Fecha inicio / Fecha fin
+}
+
+Suscripcion --> PagandoPayPal : Clic en Pagar con PayPal\n(solo si plan Básico)
+
+state "12.1 PAGO PAYPAL" as PagandoPayPal #FFF9C4 {
+  PagandoPayPal : Redirigido a PayPal sandbox
+  PagandoPayPal : Usuario aprueba el pago
+}
+
+PagandoPayPal --> PlanMensualActivo : Pago capturado OK
+
+state "12.2 PLAN MENSUAL ACTIVO" as PlanMensualActivo #C8E6C9 {
+  PlanMensualActivo : est_suscripcion = Activa
+  PlanMensualActivo : fec_fin = hoy + 30 días
+}
+
+PlanMensualActivo --> Suscripcion : Volver
+
+state "13. MI PERFIL" as Perfil {
+  Perfil : Datos personales
+  Perfil : Cambiar contraseña
+}
+
+Perfil --> Dashboard : Guardar cambios
+
+state "14. REGISTRO DE ASISTENCIA\n(Alumno vía API)" as RegistroAsistencia #E8F5E9 {
+  RegistroAsistencia : POST /api/asistencias/registrar
+  RegistroAsistencia : Alumno ingresa clave de sesión
+}
+
+RegistroAsistencia --> AsistenciaRegistrada : Clave válida
+RegistroAsistencia --> Error : Clave incorrecta\no inválida
+
+state "14.1 ASISTENCIA REGISTRADA" as AsistenciaRegistrada #C8E6C9 {
+  AsistenciaRegistrada : est_asistencia = Presente
+  AsistenciaRegistrada : hora_registro guardada
+}
+
+@enduml
