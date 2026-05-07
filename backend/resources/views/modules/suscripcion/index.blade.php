@@ -15,6 +15,22 @@
     </p>
 </div>
 
+{{-- Flash: pago exitoso --}}
+@if (session('pago_exitoso'))
+<div class="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-4 mb-6">
+    <i class="fa-solid fa-circle-check text-green-500 fa-lg"></i>
+    <p class="text-sm font-body font-semibold text-omg-dark">{{ session('pago_exitoso') }}</p>
+</div>
+@endif
+
+{{-- Flash: error de pago --}}
+@if (session('pago_error'))
+<div class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-4 mb-6">
+    <i class="fa-solid fa-circle-xmark text-red-500 fa-lg"></i>
+    <p class="text-sm font-body font-semibold text-omg-dark">{{ session('pago_error') }}</p>
+</div>
+@endif
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     {{-- Plan actual --}}
@@ -177,7 +193,7 @@ async function iniciarPago() {
     errorDiv.classList.add('hidden');
 
     try {
-        const response = await fetch('/api/pagos/crear-orden', {
+        const response = await fetch('{{ route('ca.suscripcion.crear-orden') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
