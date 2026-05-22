@@ -1,5 +1,17 @@
 <?php
 
+/*
+ * ============================================================
+ * SesionController
+ * MPL-OMEGA-05 | Código: CA-CTRL-SESION-01
+ * ============================================================
+ * Controlador HTTP para sesiones de asistencia.
+ * Sin lógica de negocio: delega al SesionService.
+ *
+ * Requerimientos: RF-62, RF-63, RF-64, RF-65
+ * ============================================================
+ */
+
 namespace App\Http\Controllers;
 
 use App\Models\Sesion;
@@ -7,16 +19,16 @@ use App\Services\SesionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Controlador HTTP — Gestión de sesiones de asistencia.
- * Sin lógica de negocio, solo delega al SesionService.
- */
 class SesionController extends Controller
 {
     public function __construct(
         private readonly SesionService $sesiones
     ) {}
 
+    /**
+     * RF-62 — Lista todas las sesiones de un grupo.
+     * GET /api/grupos/{idGrupo}/sesiones
+     */
     public function index(Request $request, int $idGrupo): JsonResponse
     {
         return response()->json([
@@ -24,18 +36,42 @@ class SesionController extends Controller
         ]);
     }
 
+    /**
+     * RF-63 — Consulta la sesión activa de un grupo.
+     * GET /api/grupos/{idGrupo}/sesiones/activa
+     * Retorna null en data si no hay sesión activa (Flutter lo usa para saber
+     * si mostrar el botón "Abrir sesión" o la pantalla de control activa).
+     */
+    public function activa(Request $request, int $idGrupo): JsonResponse
+    {
+        $sesion = $this->sesiones->sesionActivaDelGrupo($idGrupo, $request->user());
+        return response()->json(['data' => $sesion]);
+    }
+
+    /**
+     * RF-62, RF-63 — Abre una nueva sesión y genera la clave única.
+     * POST /api/grupos/{idGrupo}/sesiones/abrir
+     */
     public function abrir(Request $request, int $idGrupo): JsonResponse
     {
         $sesion = $this->sesiones->abrir($idGrupo, $request->all(), $request->user());
         return response()->json(['data' => $sesion], 201);
     }
 
+    /**
+     * RF-64 — Cierra manualmente la sesión activa.
+     * POST /api/sesiones/{sesion}/cerrar
+     */
     public function cerrar(Request $request, Sesion $sesion): JsonResponse
     {
         $actualizada = $this->sesiones->cerrar($sesion, $request->user());
         return response()->json(['data' => $actualizada]);
     }
 
+    /**
+     * RF-63 — Detalle de una sesión específica con estadísticas.
+     * GET /api/sesiones/{sesion}
+     */
     public function show(Request $request, Sesion $sesion): JsonResponse
     {
         return response()->json([

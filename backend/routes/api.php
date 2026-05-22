@@ -6,25 +6,22 @@
  * MPL-OMEGA-05 | Prefijo automático: /api
  * ============================================================
  *
- * Convenciones (Manual de Programación Laravel §3.6):
- *  - snake_case en segmentos de ruta
- *  - verbos HTTP semánticos (GET/POST/PUT/DELETE)
- *  - parámetros con el mismo nombre que la PK del recurso
- *
  * Grupos de rutas:
- *  [público]           — auth/registro, auth/login
- *  [auth:sanctum]      — todo lo demás
- *    ├─ Compartidas    — me, logout
- *    ├─ Docente        — instituciones, grupos, sesiones (abrir/cerrar),
- *    │                   asistencias (editar), rubros, grupo-alumnos (gestión),
- *    │                   reportes, justificantes, suscripción, pagos
- *    └─ Alumno         — registro asistencia por clave, panel de progreso,
- *                        mis grupos, mis materias, matriculación por código
+ *  [público]        — auth/registro, auth/login
+ *  [auth:sanctum]
+ *    ├─ Compartidas — me, logout
+ *    ├─ Docente     — dashboard, instituciones, grupos, sesiones,
+ *    │               asistencias (detalle+editar), rubros,
+ *    │               grupo-alumnos, reportes, justificantes,
+ *    │               suscripción, pagos
+ *    └─ Alumno      — unirse, mis grupos, registrar asistencia,
+ *                     historial por grupo
  * ============================================================
  */
 
 use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GrupoAlumnoController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\InstitucionController;
@@ -43,9 +40,15 @@ Route::post('auth/login',    [AuthController::class, 'login']);
 // ─── Rutas protegidas con Sanctum ─────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Auth compartida
+    // ── Auth compartida ────────────────────────────────────────────────────
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me',      [AuthController::class, 'me']);
+
+    // ── Dashboard del Docente (RF-76, RF-77) ───────────────────────────────
+    // GET  /api/dashboard                           → tarjetas + sesiones recientes + alumnos en riesgo
+    // GET  /api/grupos/{idGrupo}/reporte-alumnos    → tabla estado alumnos vs rubros
+    Route::get('dashboard',                              [DashboardController::class, 'resumen']);
+    Route::get('grupos/{idGrupo}/reporte-alumnos',       [DashboardController::class, 'estadoAlumnos']);
 
     // ── Usuarios (administración) ──────────────────────────────────────────
     Route::get('usuarios',              [UsuarioController::class, 'index']);
@@ -80,14 +83,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('grupo-alumnos/{grupoAlumno}', [GrupoAlumnoController::class, 'destroy']);
 
     // ── Sesiones ───────────────────────────────────────────────────────────
-    Route::get('grupos/{idGrupo}/sesiones',        [SesionController::class, 'index']);
-    Route::post('grupos/{idGrupo}/sesiones/abrir', [SesionController::class, 'abrir']);
-    Route::get('sesiones/{sesion}',                [SesionController::class, 'show']);
-    Route::post('sesiones/{sesion}/cerrar',        [SesionController::class, 'cerrar']);
+    // IMPORTANTE: la ruta /activa debe ir ANTES de /abrir para no colisionar
+    Route::get('grupos/{idGrupo}/sesiones',         [SesionController::class, 'index']);
+    Route::get('grupos/{idGrupo}/sesiones/activa',  [SesionController::class, 'activa']);  // RF-63
+    Route::post('grupos/{idGrupo}/sesiones/abrir',  [SesionController::class, 'abrir']);
+    Route::get('sesiones/{sesion}',                 [SesionController::class, 'show']);
+    Route::post('sesiones/{sesion}/cerrar',         [SesionController::class, 'cerrar']);
 
-    // ── Asistencias (docente) ──────────────────────────────────────────────
-    Route::get('sesiones/{idSesion}/asistencias',  [AsistenciaController::class, 'porSesion']);
-    Route::put('asistencias/{asistencia}/estado',  [AsistenciaController::class, 'editarEstado']);
+    // ── Asistencias ────────────────────────────────────────────────────────
+    // Vista básica (lista de IDs y estados)
+    Route::get('sesiones/{idSesion}/asistencias',         [AsistenciaController::class, 'porSesion']);
+    // Vista docente (con nombre completo y hora HH:MM:SS) — RF-66
+    Route::get('sesiones/{idSesion}/asistencias/detalle', [AsistenciaController::class, 'porSesionConAlumnos']);
+    // Porcentaje individual — RF-69
+    Route::get('grupos/{idGrupo}/alumnos/{idAlumno}/porcentaje', [AsistenciaController::class, 'porcentajeAlumno']);
+    // Editar estado (Presente/Ausente/Justificado) — RF-67, RF-74
+    Route::put('asistencias/{asistencia}/estado',         [AsistenciaController::class, 'editarEstado']);
 
     // ── Suscripciones ──────────────────────────────────────────────────────
     Route::get('suscripcion',         [SuscripcionController::class, 'show']);
@@ -100,22 +111,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ══════════════════════════════════════════════════════════════════════
     //  RUTAS DEL ALUMNO (app móvil Flutter)
-    //  Integradas desde OMEGA-FINAL — RF-14, RF-15, RF-19, RF-31..RF-45
+    //  RF-14, RF-15, RF-19, RF-21, RF-31..RF-45
     // ══════════════════════════════════════════════════════════════════════
 
-    // RF-19 — Matriculación por código de invitación o QR temporal
-    // POST /api/alumno/grupos/unirse   body: { "codigo_inv": "XXXXXXXX" }
-    Route::post('alumno/grupos/unirse', [AlumnoController::class, 'unirse']);
-
-    // RF-15 — Panel de progreso: lista de materias con % asistencia y rubros
-    // GET  /api/alumno/grupos
-    Route::get('alumno/grupos', [AlumnoController::class, 'misGrupos']);
-
+    // RF-19 — Matriculación por código de invitación
+    Route::post('alumno/grupos/unirse',             [AlumnoController::class, 'unirse']);
+    // RF-15 — Panel de progreso con % asistencia y rubros
+    Route::get('alumno/grupos',                     [AlumnoController::class, 'misGrupos']);
     // RF-14, RF-21, RF-38 — Registro de asistencia con clave temporal
-    // POST /api/alumno/asistencia   body: { "id_grupo": 1, "clave": "ABC123" }
-    Route::post('alumno/asistencia', [AlumnoController::class, 'registrarAsistencia']);
-
-    // RF-31, RF-32, RF-33 — Historial de asistencia por materia con colores
-    // GET  /api/alumno/grupos/{idGrupo}/historial
+    Route::post('alumno/asistencia',                [AlumnoController::class, 'registrarAsistencia']);
+    // RF-31, RF-32, RF-33 — Historial de asistencia con código de colores
     Route::get('alumno/grupos/{idGrupo}/historial', [AlumnoController::class, 'historialGrupo']);
 });

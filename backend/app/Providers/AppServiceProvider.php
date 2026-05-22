@@ -6,10 +6,8 @@
  * MPL-OMEGA-05 §2.3 — Capa de Repositorios (Encapsulamiento)
  * ============================================================
  * Vincula cada interfaz de repositorio con su implementación
- * concreta. AlumnoService no necesita binding propio porque
- * Laravel lo resuelve automáticamente por inyección de
- * dependencias (sus dependencias son todas interfaces ya
- * registradas aquí).
+ * concreta. Los Services con dependencias de interfaces se
+ * resuelven automáticamente por inyección de dependencias.
  * ============================================================
  */
 
@@ -40,15 +38,19 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Repositorios — interfaz → implementación concreta
-        $this->app->bind(UsuarioRepositoryInterface::class,        UsuarioRepository::class);
-        $this->app->bind(InstitucionRepositoryInterface::class,    InstitucionRepository::class);
-        $this->app->bind(GrupoRepositoryInterface::class,          GrupoRepository::class);
-        $this->app->bind(SesionRepositoryInterface::class,         SesionRepository::class);
-        $this->app->bind(AsistenciaRepositoryInterface::class,     AsistenciaRepository::class);
+        $this->app->bind(UsuarioRepositoryInterface::class,         UsuarioRepository::class);
+        $this->app->bind(InstitucionRepositoryInterface::class,     InstitucionRepository::class);
+        $this->app->bind(GrupoRepositoryInterface::class,           GrupoRepository::class);
+        $this->app->bind(SesionRepositoryInterface::class,          SesionRepository::class);
+        $this->app->bind(AsistenciaRepositoryInterface::class,      AsistenciaRepository::class);
         $this->app->bind(RubroEvaluacionRepositoryInterface::class, RubroEvaluacionRepository::class);
-        $this->app->bind(GrupoAlumnoRepositoryInterface::class,    GrupoAlumnoRepository::class);
-        $this->app->bind(SuscripcionRepositoryInterface::class,    SuscripcionRepository::class);
-        $this->app->bind(PagoRepositoryInterface::class,           PagoRepository::class);
+        $this->app->bind(GrupoAlumnoRepositoryInterface::class,     GrupoAlumnoRepository::class);
+        $this->app->bind(SuscripcionRepositoryInterface::class,     SuscripcionRepository::class);
+        $this->app->bind(PagoRepositoryInterface::class,            PagoRepository::class);
+
+        // DashboardService, AlumnoService y SesionService se resuelven
+        // automáticamente por DI — todas sus dependencias son interfaces
+        // ya registradas arriba.
     }
 
     public function boot(): void
