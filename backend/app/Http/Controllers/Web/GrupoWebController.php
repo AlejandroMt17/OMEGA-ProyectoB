@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Controlador Web — Gestión de Grupos/Aulas del Docente.
- * @version 1.0.0
+ * @version 1.1.0
  */
 class GrupoWebController extends Controller
 {
@@ -25,7 +25,15 @@ class GrupoWebController extends Controller
 
     public function index()
     {
-        $grupos = $this->repo->todosPorDocente(Auth::user()->id_usuario);
+        $institucionId = session('institucion_id');
+
+        // Si no hay institución activa, redirigir a seleccionar una
+        if (!$institucionId) {
+            return redirect()->route('ca.instituciones.index')
+                ->with('info', 'Selecciona una institución para ver sus aulas');
+        }
+
+        $grupos = $this->repo->todosPorInstitucion($institucionId);
         return view('modules.grupos.index', compact('grupos'));
     }
 

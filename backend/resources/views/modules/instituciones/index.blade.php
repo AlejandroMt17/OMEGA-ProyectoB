@@ -1,7 +1,7 @@
 {{--
     @file index.blade.php
     @description Lista de instituciones del Docente
-    @version 1.0.0
+    @version 1.1.0
 --}}
 @extends('layouts.app')
 @section('title', 'Mis Instituciones')
@@ -47,12 +47,26 @@
                         </p>
                     </td>
                     <td class="px-5 py-4">
-                        <p class="text-sm font-body text-omg-kashmir truncate max-w-xs">
-                            {{ $institucion->logo }}
-                        </p>
+                        @if ($institucion->logo)
+                            <img src="{{ $institucion->logo }}"
+                                 alt="Logo {{ $institucion->nombre }}"
+                                 class="h-10 w-auto object-contain rounded"
+                                 onerror="this.onerror=null;this.src='';this.parentElement.innerHTML='<span class=\'text-xs text-omg-kashmir\'>Sin logo</span>'">
+                        @else
+                            <span class="text-xs text-omg-kashmir">Sin logo</span>
+                        @endif
                     </td>
                     <td class="px-5 py-4">
                         <div class="flex items-center justify-end gap-2">
+                            {{-- Seleccionar institución activa --}}
+                            <form method="POST" action="{{ route('ca.instituciones.seleccionar', $institucion->id_institucion) }}">
+                                @csrf
+                                <button type="submit"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 {{ session('institucion_id') == $institucion->id_institucion ? 'bg-omg-coral text-white' : 'bg-omg-chardon hover:bg-omg-coral hover:text-white text-omg-nile' }} rounded-lg text-xs font-body transition-colors">
+                                    <i class="fa-solid fa-check"></i>
+                                    {{ session('institucion_id') == $institucion->id_institucion ? 'Activa' : 'Seleccionar' }}
+                                </button>
+                            </form>
                             <a href="{{ route('ca.instituciones.edit', $institucion->id_institucion) }}"
                                class="flex items-center gap-1.5 px-3 py-1.5 bg-omg-pastel hover:bg-omg-nile hover:text-white text-omg-nile rounded-lg text-xs font-body transition-colors">
                                 <i class="fa-regular fa-pen-to-square"></i>

@@ -49,6 +49,7 @@ Route::prefix('p/ca')->group(function () {
         Route::get('instituciones/{institucion}/editar',   [InstitucionWebController::class, 'edit'])->name('ca.instituciones.edit');
         Route::put('instituciones/{institucion}',          [InstitucionWebController::class, 'update'])->name('ca.instituciones.update');
         Route::delete('instituciones/{institucion}',       [InstitucionWebController::class, 'destroy'])->name('ca.instituciones.destroy');
+        Route::post('instituciones/{id}/seleccionar',      [InstitucionWebController::class, 'seleccionar'])->name('ca.instituciones.seleccionar');
 
         // Grupos
         Route::get('grupos',                           [GrupoWebController::class, 'index'])->name('ca.grupos.index');

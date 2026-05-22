@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Controlador Web — Gestión de Instituciones del Docente.
- * @version 1.0.0
+ * @version 1.1.0
  */
 class InstitucionWebController extends Controller
 {
@@ -65,5 +65,25 @@ class InstitucionWebController extends Controller
         $this->instituciones->eliminar($institucion, Auth::user());
         return redirect()->route('ca.instituciones.index')
             ->with('success', 'El registro se eliminó correctamente');
+    }
+
+    /**
+     * Guarda la institución activa en sesión y redirige a Mis Aulas.
+     */
+    public function seleccionar(int $id)
+    {
+        $institucion = $this->repo->buscarPorId($id);
+
+        if (!$institucion || $institucion->id_docente !== Auth::user()->id_usuario) {
+            abort(403);
+        }
+
+        session([
+            'institucion_id'     => $institucion->id_institucion,
+            'institucion_nombre' => $institucion->nombre,
+        ]);
+
+        return redirect()->route('ca.grupos.index')
+            ->with('success', "Institución «{$institucion->nombre}» seleccionada");
     }
 }
