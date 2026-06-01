@@ -58,6 +58,8 @@ class _ReportesScreenState extends State<ReportesScreen>
   void initState()
   {
     super.initState();
+    // Siempre invalidar caché al entrar para reflejar cambios de plan
+    SuscripcionService.invalidar();
     _cargarDatos();
   }
 
