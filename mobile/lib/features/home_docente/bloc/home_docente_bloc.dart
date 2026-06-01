@@ -128,6 +128,9 @@ class HomeDocenteBloc extends Bloc<HomeDocenteEvent, HomeDocenteState>
     try {
       final response = await ApiClient.instance.post(
         ApiRoutes.abrirSesion(event.grupoId),
+        data: {
+          'fec_sesion': DateTime.now().toIso8601String().split('T').first,
+        },
       );
 
       final sesion = SesionModel.fromJson(

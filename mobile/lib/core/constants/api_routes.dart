@@ -11,8 +11,8 @@
 //   [002] 07/05/2026 - Jorge Alejandro Martinez Toris - Ajuste rutas backend real
 //   [003] 08/05/2026 - Jorge Alejandro Martinez Toris - Ruta registro asistencia alumno
 // ============================================================
-class ApiRoutes
-{
+
+class ApiRoutes {
   ApiRoutes._();
 
   // Auth
@@ -30,44 +30,79 @@ class ApiRoutes
 
   // Instituciones
   static const String instituciones = '/instituciones';
-  static String institucion(int id) => '/instituciones/$id';
+
+  static String institucion(int id) =>
+      '/instituciones/$id';
 
   // Rubros
-  static String rubros(int institucionId) => '/instituciones/$institucionId/rubros';
-  static String rubro(int rubroId)        => '/rubros/$rubroId';
+  static String rubros(int institucionId) =>
+      '/instituciones/$institucionId/rubros';
+
+  static String rubro(int rubroId) =>
+      '/rubros/$rubroId';
 
   // Grupos
-  static String grupos(int institucionId)                 => '/instituciones/$institucionId/grupos';
-  static String grupo(int institucionId, int grupoId)     => '/instituciones/$institucionId/grupos/$grupoId';
-  static String alumnosGrupo(int grupoId)                 => '/grupos/$grupoId/alumnos';
-  static String eliminarAlumno(int grupoId, int alumnoId) => '/grupos/$grupoId/alumnos/$alumnoId';
+  static String grupos(int institucionId) =>
+      '/grupos';
+
+  static String grupo(int institucionId, int grupoId) =>
+      '/instituciones/$institucionId/grupos/$grupoId';
+
+  static String alumnosGrupo(int grupoId) =>
+      '/grupos/$grupoId/alumnos';
+
+  static String eliminarAlumno(int grupoId, int alumnoId) =>
+      '/grupos/$grupoId/alumnos/$alumnoId';
 
   // Sesiones
-  static String sesiones(int grupoId)                         => '/grupos/$grupoId/sesiones';
-  static String abrirSesion(int grupoId)                      => '/grupos/$grupoId/sesiones/abrir';
-  static String cerrarSesion(int sesionId)                    => '/sesiones/$sesionId/cerrar';
-  static String detalleSesion(int sesionId)                   => '/sesiones/$sesionId';
-  static String editarAsistencia(int sesionId, int alumnoId)  => '/sesiones/$sesionId/alumnos/$alumnoId/asistencia';
-  static String historialSesiones(int grupoId)                => '/grupos/$grupoId/sesiones/historial';
+  static String sesiones(int grupoId) =>
+      '/grupos/$grupoId/sesiones';
+
+  static String abrirSesion(int grupoId) =>
+      '/grupos/$grupoId/sesiones/abrir';
+
+  static String cerrarSesion(int sesionId) =>
+      '/sesiones/$sesionId/cerrar';
+
+  static String detalleSesion(int sesionId) =>
+      '/sesiones/$sesionId';
+
+  static String editarAsistencia(int sesionId, int alumnoId) =>
+      '/sesiones/$sesionId/alumnos/$alumnoId/asistencia';
+
+  static String historialSesiones(int grupoId) =>
+      '/grupos/$grupoId/sesiones';
 
   // Asistencias
-  static String registrarAsistencia(int sesionId) => '/sesiones/$sesionId/registrar-asistencia';
-  static String historialAlumno(int alumnoId)     => '/alumnos/$alumnoId/asistencias';
+  static String registrarAsistencia(int sesionId) => '/alumno/asistencia';
+
+
+  static String historialAlumno(int alumnoId) =>
+      '/alumnos/$alumnoId/asistencias';
 
   // Alumno
-  static const String alumnoUnirse = '/grupos/unirse';
+  static const String alumnoUnirse =
+      '/alumno/grupos/unirse';
 
   // Suscripciones y pagos
-  static const String suscripcion         = '/suscripcion';
-  static const String crearOrdenPaypal    = '/pagos/paypal/crear-orden';
-  static const String confirmarPagoPaypal = '/pagos/paypal/confirmar';
-  static const String cancelarPagoPaypal  = '/pagos/paypal/cancelar';
+  static const String suscripcion =
+      '/suscripcion';
+
+static const String crearOrdenPaypal = '/pagos/crear-orden';
+static const String confirmarPagoPaypal = '/pagos/capturar';
+static const String cancelarPagoPaypal = '/pagos/paypal-cancel';
 
   // Reportes
-  static String reporteGrupo(int grupoId) => '/grupos/$grupoId/reporte';
+  static String reporteGrupo(int grupoId) =>
+      '/grupos/$grupoId/reporte-alumnos';
 
   // Notificaciones
-  static const String notificaciones    = '/notificaciones';
-  static String marcarLeida(int id)     => '/notificaciones/$id/leer';
-  static const String marcarTodasLeidas = '/notificaciones/leer-todas';
+  static const String notificaciones =
+      '/notificaciones';
+
+  static String marcarLeida(int id) =>
+      '/notificaciones/$id/leer';
+
+  static const String marcarTodasLeidas =
+      '/notificaciones/leer-todas';
 }

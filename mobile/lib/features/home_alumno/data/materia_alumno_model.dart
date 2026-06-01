@@ -100,26 +100,25 @@ class MateriaAlumnoModel
   bool get enRiesgo       => faltasPermitidas <= 2 && faltasPermitidas > 0;
   bool get limiteExcedido => !cumpleOrdinario && totalSesiones > 0;
 
-  factory MateriaAlumnoModel.fromJson(Map<String, dynamic> json)
-  {
+  factory MateriaAlumnoModel.fromJson(Map<String, dynamic> json) {
     final sesionActiva = json['sesion_activa'] as Map<String, dynamic>?;
-    final rubrosJson   = json['rubros'] as List? ?? [];
+    final rubrosJson = json['rubros'] as List? ?? [];
 
     return MateriaAlumnoModel(
-      grupoId:             json['id_grupo']       as int,
-      materia:             json['materia']        as String,
-      nombreGrupo:         json['nombre']         as String,
-      periodo:             json['periodo']        as String?,
-      totalSesiones:       json['total_sesiones'] as int,
-      sesionesPresente:    json['presentes']      as int,
-      sesionesFalta:       json['faltas']         as int,
-      sesionesJustificada: json['justificadas']   as int,
-      rubros:              rubrosJson
+      grupoId: json['id_grupo'] as int,
+      materia: json['materia'] as String? ?? '',
+      nombreGrupo: json['nombre_grupo'] as String? ?? '',
+      periodo: json['periodo'] as String?,
+      totalSesiones: (json['total_sesiones'] as num?)?.toInt() ?? 0,
+      sesionesPresente: (json['presentes'] as num?)?.toInt() ?? 0,
+      sesionesFalta: (json['ausentes'] as num?)?.toInt() ?? 0,
+      sesionesJustificada: (json['justificadas'] as num?)?.toInt() ?? 0,
+      rubros: rubrosJson
           .map((r) => RubroModel.fromJson(r as Map<String, dynamic>))
           .toList(),
-      sesionActivaId:      sesionActiva?['id_sesion'] as int?,
-      sesionActivaClave:   sesionActiva?['clave']     as String?,
-      historial:           [],
+      sesionActivaId: sesionActiva?['id_sesion'] as int?,
+      sesionActivaClave: sesionActiva?['clave'] as String?,
+      historial: [],
     );
   }
 }

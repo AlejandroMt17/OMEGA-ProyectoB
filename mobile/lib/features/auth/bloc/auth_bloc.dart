@@ -67,7 +67,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState>
         ApiRoutes.login,
         data: {
           'email':    event.email,
-          'password': event.password,
+          'contrasenia': event.password,
         },
       );
 

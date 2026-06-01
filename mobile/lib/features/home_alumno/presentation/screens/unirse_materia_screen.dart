@@ -49,7 +49,7 @@ class _UnirseMateriaScreemState extends State<UnirseMateriaScreem>
       final codigo   = _codigoController.text.trim().toUpperCase();
       final response = await ApiClient.instance.post(
         ApiRoutes.alumnoUnirse,
-        data: {'codigo': codigo},
+        data: {'codigo_inv': codigo},
       );
 
       if (!mounted) return;

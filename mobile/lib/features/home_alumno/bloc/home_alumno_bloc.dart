@@ -76,7 +76,10 @@ class HomeAlumnoBloc extends Bloc<HomeAlumnoEvent, HomeAlumnoState>
     try {
       await ApiClient.instance.post(
         ApiRoutes.registrarAsistencia(sesionId),
-        data: {'clave': event.clave},
+        data: {
+          'id_grupo': current.materiaActiva!.grupoId,
+          'clave': event.clave,
+        },
       );
 
       // Recargar grupos para actualizar contadores

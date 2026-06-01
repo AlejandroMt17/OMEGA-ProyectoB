@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747031376121",
+    "project_id": "control-de-e903e",
+    "storage_bucket": "control-de-e903e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747031376121:android:fc2353f941bd7b3324f228",
+        "android_client_info": {
+          "package_name": "com.omega.atn_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCN1rWMoVcC-KiE-5iSPgC77YgUTzWHUZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
