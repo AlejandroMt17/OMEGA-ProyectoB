@@ -64,13 +64,16 @@ class _PaypalScreenState extends State<PaypalScreen>
             final url = request.url;
 
             // PayPal redirige a return_url con PayerID cuando el usuario aprueba
-            if (url.contains('PayerID') || url.startsWith('https://example.com/paypal-success')) {
+            if (url.contains('PayerID') ||
+                url.contains('paypal/success') ||
+                url.startsWith('https://omega-atn.app/paypal/success')) {
               _onPagoAprobado();
               return NavigationDecision.prevent;
             }
 
-            // PayPal redirige a cancel_url solo cuando el usuario cancela explicitamente
-            if (url.startsWith('https://example.com/paypal-cancel')) {
+            // PayPal redirige a cancel_url cuando el usuario cancela
+            if (url.contains('paypal/cancel') ||
+                url.startsWith('https://omega-atn.app/paypal/cancel')) {
               _onPagoCancelado();
               return NavigationDecision.prevent;
             }
