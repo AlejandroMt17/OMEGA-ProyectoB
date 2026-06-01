@@ -54,6 +54,7 @@ class _HistorialSesionesScreenState extends State<HistorialSesionesScreen>
   void initState()
   {
     super.initState();
+    SuscripcionService.invalidar();
     _cargarHistorial();
   }
 
