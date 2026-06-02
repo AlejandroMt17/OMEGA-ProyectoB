@@ -89,7 +89,8 @@ class _HistorialSesionesScreenState extends State<HistorialSesionesScreen>
         }).toList();
         setState(() { _sesiones = visibles; _sesionesOcultas = ocultas; _cargando = false; });
       }
-    } catch (_) {
+    } catch (e) {
+      print('[HISTORIAL ERROR] $e');  // ← cambia catch (_) por catch (e) y agrega este print
       setState(() { _error = 'Error al cargar el historial.'; _cargando = false; });
     }
   }

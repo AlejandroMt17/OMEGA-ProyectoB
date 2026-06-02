@@ -42,8 +42,7 @@ class ApiRoutes {
       '/rubros/$rubroId';
 
   // Grupos
-  static String grupos(int institucionId) =>
-      '/grupos';
+  static String grupos(int institucionId) => '/instituciones/$institucionId/grupos';
 
   static String grupo(int institucionId, int grupoId) =>
       '/instituciones/$institucionId/grupos/$grupoId';
