@@ -1,0 +1,267 @@
+@startuml Diagrama_Docente_OMEGA
+
+skinparam backgroundColor #F8F9FA
+skinparam linetype ortho
+top to bottom direction
+
+skinparam state {
+  BackgroundColor #DDEEFF
+  BorderColor #336699
+  FontName Arial
+  FontSize 12
+  ArrowColor #336699
+  ArrowFontSize 10
+}
+
+title Diagrama de Estados — Usuario Docente\nSistema OMEGA Control de Asistencias
+
+[*] --> Splash
+
+state "1. SPLASH / CARGA" as Splash {
+  Splash : Pantalla de bienvenida
+  Splash : Carga inicial de la app
+}
+
+Splash --> Login : Carga completada
+
+state "2. LOGIN" as Login #DDEEFF {
+  Login : Docente ingresa email
+  Login : y contraseña
+}
+
+Login --> Registro : Clic en Crear cuenta
+Login --> ValidandoDatos : Ingresar datos\ny presionar Iniciar sesión
+
+state "3. REGISTRO" as Registro #FFE0B2 {
+  Registro : Docente completa formulario
+  Registro : nombre, apellidos, email
+  Registro : contraseña
+}
+
+Registro --> ValidandoDatos : Completa formulario\ny presiona Registrarse
+
+state "4. VALIDANDO DATOS" as ValidandoDatos #E1BEE7 {
+  ValidandoDatos : El sistema valida la
+  ValidandoDatos : información ingresada
+}
+
+ValidandoDatos --> Error : Datos incorrectos
+ValidandoDatos --> Dashboard : Datos correctos
+
+state "5. ERROR" as Error #FFCDD2 {
+  Error : Se muestra mensaje
+  Error : de error al usuario
+}
+
+Error --> Login : Volver a iniciar sesión
+Error --> Registro : Volver a intentar
+
+state "6. DASHBOARD" as Dashboard #C8E6C9 {
+  Dashboard : Bienvenido [Docente]
+  Dashboard : Aulas activas
+  Dashboard : Sesiones hoy
+  Dashboard : Justificantes pendientes
+}
+
+Dashboard --> Instituciones : Clic en Mis Instituciones
+Dashboard --> MisAulas : Clic en Mis Aulas
+Dashboard --> Justificantes : Clic en Justificantes
+Dashboard --> Reportes : Clic en Reportes
+Dashboard --> Suscripcion : Clic en Suscripción
+Dashboard --> Perfil : Clic en Mi Perfil
+Dashboard --> Login : Cerrar sesión
+
+' ==================== INSTITUCIONES ====================
+state "7. MIS INSTITUCIONES" as Instituciones #DDEEFF {
+  Instituciones : Lista de instituciones
+  Instituciones : del docente
+}
+
+Instituciones --> CrearInstitucion : Clic en Nueva institución
+Instituciones --> EditarInstitucion : Clic en Editar
+Instituciones --> EliminarInstitucion : Clic en Eliminar
+Instituciones --> Dashboard : Volver
+
+state "7.1 CREAR INSTITUCIÓN" as CrearInstitucion #E3F2FD {
+  CrearInstitucion : Formulario de institución
+  CrearInstitucion : nombre, dirección, etc.
+}
+
+state "7.2 EDITAR INSTITUCIÓN" as EditarInstitucion #E3F2FD {
+  EditarInstitucion : Editar datos
+  EditarInstitucion : de la institución
+}
+
+state "7.3 CONFIRMAR ELIMINACIÓN" as EliminarInstitucion #FFCDD2 {
+  EliminarInstitucion : Esta acción no se
+  EliminarInstitucion : puede deshacer
+}
+
+CrearInstitucion --> Instituciones : Guardar
+EditarInstitucion --> Instituciones : Guardar
+EliminarInstitucion --> Instituciones : Confirmar eliminar
+
+' ==================== MIS AULAS ====================
+state "8. MIS AULAS" as MisAulas #DDEEFF {
+  MisAulas : Lista de grupos del docente
+  MisAulas : Nombre / Materia / Periodo
+  MisAulas : No. Alumnos / Código
+}
+
+MisAulas --> CrearAula : Clic en Nueva aula
+MisAulas --> EditarAula : Clic en Editar
+MisAulas --> EliminarAula : Clic en Eliminar
+MisAulas --> GenerarCodigo : Clic en Generar código
+MisAulas --> Sesiones : Clic en Sesiones
+MisAulas --> Dashboard : Volver
+
+state "8.1 CREAR AULA" as CrearAula #E3F2FD {
+  CrearAula : Formulario de grupo
+  CrearAula : nombre, materia, periodo
+}
+
+state "8.2 EDITAR AULA" as EditarAula #E3F2FD {
+  EditarAula : Editar datos del grupo
+}
+
+state "8.3 CÓDIGO DE INVITACIÓN" as GenerarCodigo #FFF9C4 {
+  GenerarCodigo : Código generado y visible
+  GenerarCodigo : Alumnos lo usan para unirse
+}
+
+state "8.4 CONFIRMAR ELIMINACIÓN" as EliminarAula #FFCDD2 {
+  EliminarAula : Esta acción no se
+  EliminarAula : puede deshacer
+}
+
+CrearAula --> MisAulas : Guardar
+EditarAula --> MisAulas : Guardar
+GenerarCodigo --> MisAulas : Volver
+EliminarAula --> MisAulas : Confirmar eliminar
+
+' ==================== SESIONES ====================
+state "9. SESIONES" as Sesiones #DDEEFF {
+  Sesiones : Lista de sesiones del grupo
+  Sesiones : Fecha / Apertura / Cierre / Estado
+}
+
+Sesiones --> SesionAbierta : Clic en Abrir sesión
+Sesiones --> DetalleAsistencias : Clic en Detalles
+Sesiones --> MisAulas : Volver
+
+state "9.1 SESIÓN ABIERTA" as SesionAbierta #C8E6C9 {
+  SesionAbierta : Clave activa visible
+  SesionAbierta : Alumnos pueden registrarse
+  SesionAbierta : con la clave
+}
+
+SesionAbierta --> SesionCerrada : Clic en Cerrar sesión
+SesionAbierta --> DetalleAsistencias : Clic en Detalles
+
+state "9.2 SESIÓN CERRADA" as SesionCerrada #ECEFF1 {
+  SesionCerrada : hora_cierre registrada
+  SesionCerrada : Sin acción posible
+}
+
+SesionCerrada --> Sesiones : Volver
+
+state "9.3 DETALLE ASISTENCIAS" as DetalleAsistencias #E8F5E9 {
+  DetalleAsistencias : Lista de alumnos
+  DetalleAsistencias : Presente / Ausente / Justificada
+  DetalleAsistencias : Hora de registro
+}
+
+DetalleAsistencias --> Sesiones : Volver
+
+' ==================== JUSTIFICANTES ====================
+state "10. JUSTIFICANTES" as Justificantes #DDEEFF {
+  Justificantes : Lista de ausencias
+  Justificantes : de todos los grupos
+}
+
+Justificantes --> JustificarAlumno : Clic en Justificar
+Justificantes --> MarcarAusente : Clic en Marcar ausente
+Justificantes --> Dashboard : Volver
+
+state "10.1 AUSENCIA JUSTIFICADA" as JustificarAlumno #C8E6C9 {
+  JustificarAlumno : est_asistencia = Justificada
+}
+
+state "10.2 MARCAR AUSENTE" as MarcarAusente #FFCDD2 {
+  MarcarAusente : est_asistencia = Ausente
+}
+
+JustificarAlumno --> Justificantes : Volver
+MarcarAusente --> Justificantes : Volver
+
+' ==================== REPORTES ====================
+state "11. REPORTES" as Reportes #DDEEFF {
+  Reportes : Resumen por grupo
+  Reportes : % asistencia
+  Reportes : Presentes / Ausentes / Justificadas
+}
+
+Reportes --> DetalleReporte : Clic en Detalles
+Reportes --> Dashboard : Volver
+
+state "11.1 DETALLE REPORTE" as DetalleReporte #E3F2FD {
+  DetalleReporte : Reporte por sesión
+  DetalleReporte : Presentes / Ausentes
+  DetalleReporte : Justificadas por sesión
+}
+
+DetalleReporte --> DetalleAsistencias : Clic en Detalles sesión
+DetalleReporte --> Reportes : Volver
+
+' ==================== SUSCRIPCIÓN ====================
+state "12. SUSCRIPCIÓN" as Suscripcion #FFF9C4 {
+  Suscripcion : Plan actual
+  Suscripcion : Básico (gratis) o Mensual ($149)
+  Suscripcion : Fecha inicio / Fecha fin
+}
+
+Suscripcion --> PagandoPayPal : Clic en Pagar con PayPal
+Suscripcion --> Dashboard : Volver
+
+state "12.1 PROCESANDO PAGO PAYPAL" as PagandoPayPal #FFE0B2 {
+  PagandoPayPal : Redirigido a PayPal
+  PagandoPayPal : Usuario aprueba el pago
+  PagandoPayPal : Sistema captura la orden
+}
+
+PagandoPayPal --> PlanMensualActivo : Pago capturado OK
+PagandoPayPal --> Error : Pago fallido
+
+state "12.2 PLAN MENSUAL ACTIVO" as PlanMensualActivo #C8E6C9 {
+  PlanMensualActivo : est_suscripcion = Activa
+  PlanMensualActivo : fec_fin = hoy + 30 días
+  PlanMensualActivo : Pago registrado en historial
+}
+
+PlanMensualActivo --> Suscripcion : Volver
+
+' ==================== PERFIL ====================
+state "13. MI PERFIL" as Perfil #DDEEFF {
+  Perfil : Datos personales
+  Perfil : nombre, apellidos, email
+  Perfil : Cambiar contraseña
+}
+
+Perfil --> PerfilActualizado : Clic en Actualizar
+Perfil --> CambiarContrasenia : Clic en Cambiar contraseña
+Perfil --> Dashboard : Volver
+
+state "13.1 PERFIL ACTUALIZADO" as PerfilActualizado #C8E6C9 {
+  PerfilActualizado : Datos guardados correctamente
+}
+
+state "13.2 CAMBIAR CONTRASEÑA" as CambiarContrasenia #E3F2FD {
+  CambiarContrasenia : Contraseña actual
+  CambiarContrasenia : Nueva contraseña
+  CambiarContrasenia : Confirmar contraseña
+}
+
+PerfilActualizado --> Perfil : Volver
+CambiarContrasenia --> Perfil : Guardar
+
+@enduml

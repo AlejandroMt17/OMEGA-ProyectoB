@@ -1,0 +1,170 @@
+@startuml Diagrama_Alumno_Flujo_OMEGA
+
+skinparam backgroundColor #F8F9FA
+skinparam linetype ortho
+top to bottom direction
+
+skinparam state {
+  BackgroundColor #DDEEFF
+  BorderColor #336699
+  FontName Arial
+  FontSize 12
+  ArrowColor #336699
+  ArrowFontSize 10
+}
+
+title Diagrama de Estados — Usuario Alumno (Flujo Principal)\nSistema OMEGA Control de Asistencias
+
+[*] --> Dashboard : Viene del\ndiagrama de auth
+
+state "6. DASHBOARD ALUMNO" as Dashboard #C8E6C9 {
+  Dashboard : Bienvenido [Alumno]
+  Dashboard : Mis grupos inscritos
+  Dashboard : Materias asignadas
+}
+
+Dashboard --> UnirseGrupo : Clic en Unirse a grupo
+Dashboard --> RegistrarAsistencia : Clic en Registrar asistencia
+Dashboard --> HistorialAsistencias : Clic en Ver historial
+Dashboard --> PerfilAlumno : Clic en Mi Perfil
+
+' ==================== UNIRSE A GRUPO ====================
+state "7. UNIRSE A GRUPO" as UnirseGrupo #DDEEFF {
+  UnirseGrupo : Alumno ingresa código
+  UnirseGrupo : de invitación del docente
+  UnirseGrupo : POST /api/grupos/matricular
+}
+
+UnirseGrupo --> ValidandoCodigo : Presiona Unirse
+
+state "7.1 VALIDANDO CÓDIGO" as ValidandoCodigo #E1BEE7 {
+  ValidandoCodigo : El sistema verifica
+  ValidandoCodigo : el código de invitación
+}
+
+ValidandoCodigo --> GrupoVinculado : Código válido
+ValidandoCodigo --> ErrorCodigo : Código inválido
+
+state "7.2 GRUPO VINCULADO" as GrupoVinculado #C8E6C9 {
+  GrupoVinculado : Alumno agregado al grupo
+  GrupoVinculado : Grupo visible en Dashboard
+}
+
+state "7.3 ERROR CÓDIGO" as ErrorCodigo #FFCDD2 {
+  ErrorCodigo : Código de invitación
+  ErrorCodigo : inválido o expirado
+}
+
+GrupoVinculado --> Dashboard : Volver
+ErrorCodigo --> UnirseGrupo : Volver a intentar
+
+' ==================== REGISTRAR ASISTENCIA ====================
+state "8. REGISTRAR ASISTENCIA" as RegistrarAsistencia #DDEEFF {
+  RegistrarAsistencia : Alumno selecciona
+  RegistrarAsistencia : la materia / grupo
+}
+
+RegistrarAsistencia --> IngresarClave : Selecciona grupo
+RegistrarAsistencia --> Dashboard : Volver
+
+state "8.1 INGRESAR CLAVE" as IngresarClave #FFF9C4 {
+  IngresarClave : Alumno ingresa la clave
+  IngresarClave : generada por el docente
+  IngresarClave : POST /api/asistencias/registrar
+}
+
+IngresarClave --> ValidandoClave : Presiona Registrar
+
+state "8.2 VALIDANDO CLAVE" as ValidandoClave #E1BEE7 {
+  ValidandoClave : El sistema verifica
+  ValidandoClave : la clave de sesión
+  ValidandoClave : Sesión debe estar activa
+}
+
+ValidandoClave --> AsistenciaRegistrada : Clave válida\ny sesión activa
+ValidandoClave --> SesionCerrada : Sesión ya cerrada
+ValidandoClave --> ErrorClave : Clave incorrecta\no inválida
+
+state "8.3 ASISTENCIA REGISTRADA" as AsistenciaRegistrada #C8E6C9 {
+  AsistenciaRegistrada : est_asistencia = Presente
+  AsistenciaRegistrada : hora_registro guardada
+  AsistenciaRegistrada : Registro exitoso
+}
+
+state "8.4 SESIÓN CERRADA" as SesionCerrada #ECEFF1 {
+  SesionCerrada : La sesión fue cerrada
+  SesionCerrada : por el docente
+  SesionCerrada : No es posible registrar
+}
+
+state "8.5 ERROR CLAVE" as ErrorClave #FFCDD2 {
+  ErrorClave : Clave incorrecta
+  ErrorClave : o inválida
+}
+
+AsistenciaRegistrada --> Dashboard : Volver
+SesionCerrada --> Dashboard : Volver
+ErrorClave --> IngresarClave : Volver a intentar
+
+' ==================== ESTADOS DE ASISTENCIA ====================
+state "8.6 AUSENTE" as Ausente #FFCDD2 {
+  Ausente : El alumno no registró
+  Ausente : asistencia a tiempo
+  Ausente : est_asistencia = Ausente
+}
+
+state "8.7 JUSTIFICADA" as Justificada #FFF9C4 {
+  Justificada : El docente justificó
+  Justificada : la ausencia del alumno
+  Justificada : est_asistencia = Justificada
+}
+
+AsistenciaRegistrada --> Ausente : Docente marca ausente
+Ausente --> Justificada : Docente justifica
+Justificada --> HistorialAsistencias : Visible en historial
+Ausente --> HistorialAsistencias : Visible en historial
+
+' ==================== HISTORIAL ====================
+state "9. HISTORIAL DE ASISTENCIAS" as HistorialAsistencias #DDEEFF {
+  HistorialAsistencias : Lista de asistencias
+  HistorialAsistencias : por grupo y sesión
+  HistorialAsistencias : Presente / Ausente / Justificada
+}
+
+HistorialAsistencias --> DetalleAsistencia : Clic en sesión
+HistorialAsistencias --> Dashboard : Volver
+
+state "9.1 DETALLE ASISTENCIA" as DetalleAsistencia #E3F2FD {
+  DetalleAsistencia : Fecha de la sesión
+  DetalleAsistencia : Hora de registro
+  DetalleAsistencia : Estado de asistencia
+}
+
+DetalleAsistencia --> HistorialAsistencias : Volver
+
+' ==================== PERFIL ====================
+state "10. MI PERFIL" as PerfilAlumno #DDEEFF {
+  PerfilAlumno : Datos personales
+  PerfilAlumno : nombre, apellidos, email
+  PerfilAlumno : Cambiar contraseña
+}
+
+PerfilAlumno --> PerfilActualizado : Clic en Actualizar
+PerfilAlumno --> CambiarContrasenia : Clic en Cambiar contraseña
+PerfilAlumno --> Dashboard : Volver
+
+state "10.1 PERFIL ACTUALIZADO" as PerfilActualizado #C8E6C9 {
+  PerfilActualizado : Datos guardados
+  PerfilActualizado : correctamente
+}
+
+state "10.2 CAMBIAR CONTRASEÑA" as CambiarContrasenia #E3F2FD {
+  CambiarContrasenia : Contraseña actual
+  CambiarContrasenia : Nueva contraseña
+  CambiarContrasenia : Confirmar contraseña
+}
+
+PerfilActualizado --> PerfilAlumno : Volver
+CambiarContrasenia --> PerfilAlumno : Guardar
+
+@enduml

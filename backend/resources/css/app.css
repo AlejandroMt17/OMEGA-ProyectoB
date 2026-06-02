@@ -1,0 +1,40 @@
+@import "tailwindcss";
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Inter:wght@400;500;600&display=swap');
+
+@theme {
+    /* Colores institucionales OMEGA */
+    --color-omg-nile: #3B5675;
+    --color-omg-nile-dark: #233B54;
+    --color-omg-nile-light: #517399;
+    --color-omg-coral: #F29066;
+    --color-omg-coral-dark: #E77C4E;
+    --color-omg-coral-light: #FFAE91;
+    --color-omg-kashmir: #9ABBC9;
+    --color-omg-kashmir-dark: #B2CFDB;
+    --color-omg-chardon: #FAEFED;
+    --color-omg-chardon-dark: #F5E2DF;
+    --color-omg-pastel: #EBEDDF;
+    --color-omg-dark: #303030;
+    --color-omg-white: #FFFDFC;
+
+    /* Tipografía institucional */
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+/* Tipografía base */
+body {
+    font-family: var(--font-body);
+    color: var(--color-omg-dark);
+    background-color: var(--color-omg-white);
+}
+
+h1,
+h2,
+h3,
+h4,
+.btn-text {
+    font-family: var(--font-heading);
+    font-weight: 600;
+}
