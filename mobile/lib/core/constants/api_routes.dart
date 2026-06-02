@@ -42,7 +42,8 @@ class ApiRoutes {
       '/rubros/$rubroId';
 
   // Grupos
-  static String grupos(int institucionId) => '/instituciones/$institucionId/grupos';
+  static String grupos(int institucionId) =>
+  '/instituciones/$institucionId/grupos';
 
   static String grupo(int institucionId, int grupoId) =>
       '/instituciones/$institucionId/grupos/$grupoId';
@@ -57,6 +58,8 @@ class ApiRoutes {
   static String sesiones(int grupoId) =>
       '/grupos/$grupoId/sesiones';
 
+static String sesionActiva(int grupoId) =>
+    '/grupos/$grupoId/sesiones/activa';
   static String abrirSesion(int grupoId) =>
       '/grupos/$grupoId/sesiones/abrir';
 

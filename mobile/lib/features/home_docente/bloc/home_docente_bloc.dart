@@ -71,24 +71,33 @@ class HomeDocenteBloc extends Bloc<HomeDocenteEvent, HomeDocenteState>
 
       final grupos = await _cargarGrupos(instActiva.id);
 
-      emit(HomeDocenteLoaded(
-        instituciones:     instituciones,
-        institucionActiva: instActiva,
-        grupos:            grupos,
-        sesionActiva:      prev?.sesionActiva, // preservar sesion activa durante polling
-        claveActiva:       prev?.claveActiva,
-      ));
-    } on DioException catch (e) {
-      if (prev != null) return; // En polling silencioso no mostrar error
-      emit(HomeDocenteError(
-        mensaje: e.response?.data?['message'] as String?
-            ?? 'Error al cargar los datos.',
-      ));
-    } catch (_) {
-      if (prev != null) return; // En polling silencioso no mostrar error
-      emit(const HomeDocenteError(mensaje: 'Error de conexion.'));
-    }
+// Buscar sesión activa si no hay una preservada
+SesionModel? sesionActiva = prev?.sesionActiva;
+String?      claveActiva  = prev?.claveActiva;
+
+if (sesionActiva == null) {
+  for (final grupo in grupos) {
+    try {
+      final sesResp = await ApiClient.instance.get(
+        ApiRoutes.sesionActiva(grupo.id),
+      );
+      final data = sesResp.data['data'];
+      if (data != null) {
+        sesionActiva = SesionModel.fromJson(data as Map<String, dynamic>);
+        claveActiva  = sesionActiva.clave;
+        break;
+      }
+    } catch (_) {}
   }
+}
+
+emit(HomeDocenteLoaded(
+  instituciones:     instituciones,
+  institucionActiva: instActiva,
+  grupos:            grupos,
+  sesionActiva:      sesionActiva,
+  claveActiva:       claveActiva,
+));
 
   Future<void> _onInstitucionSeleccionada(
       InstitucionSeleccionada event,
