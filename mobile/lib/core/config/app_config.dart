@@ -15,7 +15,7 @@ class AppConfig
   AppConfig._();
 
   // Cambia esta URL cuando el backend este listo
-  static const String baseUrl = 'http://192.168.1.68:8000/api';
+  static const String baseUrl = 'http://10.250.1.90:8000/api';
 
   // PayPal sandbox — reemplazar con produccion cuando este listo
   static const String paypalClientId   = 'TU_PAYPAL_CLIENT_ID_SANDBOX';

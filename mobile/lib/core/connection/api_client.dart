@@ -19,7 +19,7 @@ class ApiClient
 
   static const String _baseUrl = String.fromEnvironment(
   'API_URL',
-  defaultValue: 'http://192.168.1.68:8000/api',
+  defaultValue: 'http://10.250.1.90:8000/api',
 );
   static const int    _timeoutMs   = 30000;
 

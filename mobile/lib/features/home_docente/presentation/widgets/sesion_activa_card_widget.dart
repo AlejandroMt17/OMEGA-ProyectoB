@@ -46,7 +46,7 @@ class _SesionActivaCardWidgetState extends State<SesionActivaCardWidget>
   void initState()
   {
     super.initState();
-    _segundos = 0;
+    _segundos = widget.sesion.segundosAbierta;
     _startTimer();
     _startPulse();
   }

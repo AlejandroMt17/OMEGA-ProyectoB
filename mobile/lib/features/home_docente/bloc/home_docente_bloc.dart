@@ -9,7 +9,8 @@
 // Changelog:
 //   [001] 24/04/2026 - Dev - BLoC home docente con datos mock
 //   [002] 07/05/2026 - Jorge Alejandro Martinez Toris - Conexion real al backend
-//   [003] 28/05/2026 - Jorge Alejandro Martinez Toris - Polling silencioso: preserva sesion e institucion activa
+//   [003] 28/05/2026 - Jorge Alejandro Martinez Toris - Polling silencioso
+//   [004] 01/06/2026 - Fix: cargar sesion activa al iniciar
 // ============================================================
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,32 +37,24 @@ class HomeDocenteBloc extends Bloc<HomeDocenteEvent, HomeDocenteState>
       Emitter<HomeDocenteState> emit,
       ) async
   {
-    // Preservar estado actual para polling silencioso
     final prev = state is HomeDocenteLoaded ? state as HomeDocenteLoaded : null;
 
-    // Solo mostrar loading en la carga inicial
     if (prev == null) {
       emit(const HomeDocenteLoading());
     }
 
     try {
-      final response = await ApiClient.instance.get(
-        ApiRoutes.instituciones,
-      );
+      final response = await ApiClient.instance.get(ApiRoutes.instituciones);
 
       final instituciones = (response.data['data'] as List)
           .map((i) => InstitucionModel.fromJson(i as Map<String, dynamic>))
           .toList();
 
       if (instituciones.isEmpty) {
-        emit(const HomeDocenteLoaded(
-          instituciones: [],
-          grupos:        [],
-        ));
+        emit(const HomeDocenteLoaded(instituciones: [], grupos: []));
         return;
       }
 
-      // Mantener la institucion que el docente tenia seleccionada
       final instActiva = prev?.institucionActiva != null
           ? instituciones.firstWhere(
               (i) => i.id == prev!.institucionActiva!.id,
@@ -71,58 +64,41 @@ class HomeDocenteBloc extends Bloc<HomeDocenteEvent, HomeDocenteState>
 
       final grupos = await _cargarGrupos(instActiva.id);
 
-// Buscar sesión activa si no hay una preservada
-SesionModel? sesionActiva = prev?.sesionActiva;
-String?      claveActiva  = prev?.claveActiva;
+      // Buscar sesión activa si no hay una preservada
+      SesionModel? sesionActiva = prev?.sesionActiva;
+      String?      claveActiva  = prev?.claveActiva;
 
-if (sesionActiva == null) {
-  for (final grupo in grupos) {
-    try {
-      final sesResp = await ApiClient.instance.get(
-        ApiRoutes.sesionActiva(grupo.id),
-      );
-      final data = sesResp.data['data'];
-      if (data != null) {
-        sesionActiva = SesionModel.fromJson(data as Map<String, dynamic>);
-        claveActiva  = sesionActiva.clave;
-        break;
+      if (sesionActiva == null) {
+        for (final grupo in grupos) {
+          try {
+            final sesResp = await ApiClient.instance.get(
+              ApiRoutes.sesionActiva(grupo.id),
+            );
+            final data = sesResp.data['data'];
+            if (data != null) {
+              sesionActiva = SesionModel.fromJson(data as Map<String, dynamic>);
+              claveActiva  = sesionActiva.clave;
+              break;
+            }
+          } catch (_) {}
+        }
       }
-    } catch (_) {}
-  }
-}
 
-emit(HomeDocenteLoaded(
-  instituciones:     instituciones,
-  institucionActiva: instActiva,
-  grupos:            grupos,
-  sesionActiva:      sesionActiva,
-  claveActiva:       claveActiva,
-));
-
-  Future<void> _onInstitucionSeleccionada(
-      InstitucionSeleccionada event,
-      Emitter<HomeDocenteState> emit,
-      ) async
-  {
-    if (state is! HomeDocenteLoaded) return;
-    final current = state as HomeDocenteLoaded;
-
-    final institucion = current.instituciones
-        .firstWhere((i) => i.id == event.institucionId);
-
-    try {
-      final grupos = await _cargarGrupos(event.institucionId);
-      emit(current.copyWith(
-        institucionActiva: institucion,
+      emit(HomeDocenteLoaded(
+        instituciones:     instituciones,
+        institucionActiva: instActiva,
         grupos:            grupos,
-        clearSesion:       true,
+        sesionActiva:      sesionActiva,
+        claveActiva:       claveActiva,
+      ));
+    } on DioException catch (e) {
+      if (prev != null) return;
+      emit(HomeDocenteError(
+        mensaje: e.response?.data?['message'] as String? ?? 'Error al cargar los datos.',
       ));
     } catch (_) {
-      emit(current.copyWith(
-        institucionActiva: institucion,
-        grupos:            [],
-        clearSesion:       true,
-      ));
+      if (prev != null) return;
+      emit(const HomeDocenteError(mensaje: 'Error de conexion.'));
     }
   }
 
@@ -160,6 +136,7 @@ emit(HomeDocenteLoaded(
       emit(current);
     }
   }
+
   Future<void> _onSesionCerrada(
       SesionCerrada event,
       Emitter<HomeDocenteState> emit,
@@ -169,9 +146,7 @@ emit(HomeDocenteLoaded(
     final current = state as HomeDocenteLoaded;
 
     try {
-      await ApiClient.instance.post(
-        ApiRoutes.cerrarSesion(event.sesionId),
-      );
+      await ApiClient.instance.post(ApiRoutes.cerrarSesion(event.sesionId));
       emit(current.copyWith(clearSesion: true));
     } on DioException catch (_) {
       emit(current.copyWith(clearSesion: true));
@@ -188,5 +163,52 @@ emit(HomeDocenteLoaded(
     return (response.data['data'] as List)
         .map((g) => GrupoModel.fromJson(g as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<void> _onInstitucionSeleccionada(
+      InstitucionSeleccionada event,
+      Emitter<HomeDocenteState> emit,
+      ) async
+  {
+    if (state is! HomeDocenteLoaded) return;
+    final current = state as HomeDocenteLoaded;
+
+    final institucion = current.instituciones
+        .firstWhere((i) => i.id == event.institucionId);
+
+    try {
+      final grupos = await _cargarGrupos(event.institucionId);
+
+      // Buscar sesión activa en los grupos de la nueva institución
+      SesionModel? sesionActiva;
+      String?      claveActiva;
+      for (final grupo in grupos) {
+        try {
+          final sesResp = await ApiClient.instance.get(
+            ApiRoutes.sesionActiva(grupo.id),
+          );
+          final data = sesResp.data['data'];
+          if (data != null) {
+            sesionActiva = SesionModel.fromJson(data as Map<String, dynamic>);
+            claveActiva  = sesionActiva.clave;
+            break;
+          }
+        } catch (_) {}
+      }
+
+      emit(current.copyWith(
+        institucionActiva: institucion,
+        grupos:            grupos,
+        sesionActiva:      sesionActiva,
+        claveActiva:       claveActiva,
+        clearSesion:       sesionActiva == null,
+      ));
+    } catch (_) {
+      emit(current.copyWith(
+        institucionActiva: institucion,
+        grupos:            [],
+        clearSesion:       true,
+      ));
+    }
   }
 }

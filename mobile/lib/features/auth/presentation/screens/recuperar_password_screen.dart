@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/connection/api_client.dart';
+import '../../../../core/constants/api_routes.dart';
 
 class RecuperarPasswordScreen extends StatefulWidget
 {
@@ -43,15 +45,21 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen>
 
     setState(() => _cargando = true);
 
-    await Future.delayed(const Duration(milliseconds: 1000));
+    try {
+      await ApiClient.instance.post(
+        ApiRoutes.recuperarPassword,
+        data: {'email': _emailController.text.trim()},
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
+      setState(() { _cargando = false; _enviado = true; });
 
-    setState(()
-    {
-      _cargando = false;
-      _enviado  = true;
-    });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _cargando = false);
+      // Igual mostramos confirmación por seguridad
+      setState(() => _enviado = true);
+    }
   }
 
   @override

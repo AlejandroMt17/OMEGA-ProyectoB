@@ -43,12 +43,25 @@ class SesionHistorialModel
     return SesionHistorialModel(
       id:           json['id_sesion']     as int,
       fecha:        json['fec_sesion']    as String,
-      horaApertura: json['hora_apertura'] as String,
-      horaCierre:   json['hora_cierre']   as String?,
+      horaApertura: _formatHora(json['hora_apertura'] as String),
+horaCierre:   json['hora_cierre'] != null
+    ? _formatHora(json['hora_cierre'] as String)
+    : null,
       totalAlumnos: json['total_alumnos'] as int,
       presentes:    json['presentes']     as int,
       faltas:       json['faltas']        as int,
       justificadas: json['justificadas']  as int,
     );
+  }
+  static String _formatHora(String iso)
+  {
+    try {
+      final dt = DateTime.parse(iso);
+      final h  = dt.hour.toString().padLeft(2, '0');
+      final m  = dt.minute.toString().padLeft(2, '0');
+      return '$h:$m';
+    } catch (_) {
+      return iso;
+    }
   }
 }
