@@ -33,8 +33,8 @@ class SuscripcionModel
 
   // plan 0 = basico, plan 1 = mensual
   // estado 0 = inactivo, estado 1 = activo, estado 2 = vencido, estado 3 = periodo de gracia
-  bool get isBasico        => plan == 0;
-  bool get isMensual       => plan == 1;
+  bool get isBasico        => plan == 1;
+  bool get isMensual       => plan == 2;
   bool get isActivo        => estado == 1;
   bool get isVencido       => estado == 2;
   bool get isPeriodoGracia => estado == 3;
